@@ -1,180 +1,155 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!-- loyalty-app.html -->
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Calculator</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-        }
-        .calculator {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
-        #display {
-            width: 1000%;
-            height: 50px;
-            font-size: 24px;
-            text-align: right;
-            padding: 10px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        .buttons {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-        }
-        button {
-            padding: 15px;
-            font-size: 18px;
-            border: none;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        button:hover {
-            background-color: #e0e0e0;
-        }
-        .operator {
-            background-color: #ff9500;
-            color: #fff;
-        }
-        .operator:hover {
-            background-color: #e68a00;
-        }
-        .equals {
-            background-color: #2196f3;
-            color: #fff;
-        }
-        .equals:hover {
-            background-color: #1e87db;
-        }
-        .clear {
-            background-color: #f44336;
-            color: #fff;
-        }
-        .clear:hover {
-            background-color: #d93b30;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loyalty Rewards - Customer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .rewards {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <div class="calculator">
-        <input type="text" id="display" readonly value="0">
-        <div class="buttons">
-            <button class="clear" onclick="clearDisplay()">C</button>
-            <button onclick="appendToDisplay('(')">(</button>
-            <button onclick="appendToDisplay(')')">)</button>
-            <button class="operator" onclick="appendToDisplay('/')">÷</button>
-            <button onclick="appendToDisplay('7')">7</button>
-            <button onclick="appendToDisplay('8')">8</button>
-            <button onclick="appendToDisplay('9')">9</button>
-            <button class="operator" onclick="appendToDisplay('*')">×</button>
-            <button onclick="appendToDisplay('4')">4</button>
-            <button onclick="appendToDisplay('5')">5</button>
-            <button onclick="appendToDisplay('6')">6</button>
-            <button class="operator" onclick="appendToDisplay('-')">-</button>
-            <button onclick="appendToDisplay('1')">1</button>
-            <button onclick="appendToDisplay('2')">2</button>
-            <button onclick="appendToDisplay('3')">3</button>
-            <button class="operator" onclick="appendToDisplay('+')">+</button>
-            <button onclick="appendToDisplay('0')">0</button>
-            <button onclick="appendToDisplay('.')">.</button>
-            <button class="equals" onclick="calculate()">=</button>
-        </div>
-    </div>
+  <div class="container">
+    <h2>Check Your Rewards</h2>
+    <input type="text" id="mobile" placeholder="Enter Mobile Number" />
+    <button onclick="checkRewards()">View Rewards</button>
+    <div class="rewards" id="rewardsDisplay"></div>
+  </div>
 
-    <script>
-        let display = document.getElementById('display');
+  <script>
+    function checkRewards() {
+      const mobile = document.getElementById('mobile').value;
+      const data = JSON.parse(localStorage.getItem('loyaltyDB') || '{}');
+      const record = data[mobile];
 
-        function appendToDisplay(value) {
-            if (display.value === '0' && value !== '.') {
-                display.value = value;
-            } else {
-                display.value += value;
-            }
-        }
+      if (record) {
+        document.getElementById('rewardsDisplay').innerHTML = `
+          <h3>Hello ${record.name}!</h3>
+          <p>Location: ${record.location}</p>
+          <p>Bill #: ${record.bill}</p>
+          <p>You have <strong>${record.stamps}</strong> stamps.</p>
+        `;
+      } else {
+        document.getElementById('rewardsDisplay').innerHTML = '<p>No rewards found for this number.</p>';
+      }
+    }
+  </script>
+</body>
+</html>
 
-        function clearDisplay() {
-            display.value = '0';
-        }
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loyalty Rewards - Admin</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #222;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Add/Update Customer Rewards</h2>
+    <input type="text" id="name" placeholder="Customer Name" />
+    <input type="text" id="mobile" placeholder="Mobile Number" />
+    <input type="text" id="location" placeholder="Location" />
+    <input type="text" id="bill" placeholder="Bill Number" />
+    <input type="number" id="stamps" placeholder="No. of Stamps" />
+    <button onclick="saveData()">Submit</button>
+  </div>
 
-        function calculate() {
-            try {
-                display.value = eval(display.value.replace('×', '*').replace('÷', '/'));
-            } catch (error) {
-                display.value = 'Error';
-                setTimeout(clearDisplay, 1000);
-            }
-        }
+  <script>
+    function saveData() {
+      const name = document.getElementById('name').value;
+      const mobile = document.getElementById('mobile').value;
+      const location = document.getElementById('location').value;
+      const bill = document.getElementById('bill').value;
+      const stamps = document.getElementById('stamps').value;
 
-        // Keyboard support
-        document.addEventListener('keydown', (event) => {
-            const key = event.key;
-            if (/[0-9]/.test(key)) appendToDisplay(key);
-            else if (key === '.') appendToDisplay('.');
-            else if (key === '+') appendToDisplay('+');
-            else if (key === '-') appendToDisplay('-');
-            else if (key === '*') appendToDisplay('*');
-            else if (key === '/') appendToDisplay('/');
-            else if (key === '(') appendToDisplay('(');
-            else if (key === ')') appendToDisplay(')');
-            else if (key === 'Enter') calculate();
-            else if (key === 'Escape') clearDisplay();
-        });
-    </script>
+      if (!name || !mobile || !location || !bill || !stamps) {
+        alert('All fields are required.');
+        return;
+      }
+
+      const data = JSON.parse(localStorage.getItem('loyaltyDB') || '{}');
+      data[mobile] = { name, mobile, location, bill, stamps };
+      localStorage.setItem('loyaltyDB', JSON.stringify(data));
+      alert('Customer data saved successfully.');
+    }
+  </script>
 </body>
 </html>
