@@ -1,19 +1,19 @@
-<!-- admin.html -->
+<!-- loyalty-app.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Loyalty Rewards - Admin</title>
+  <title>Loyalty Rewards - Customer</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f9fafb;
+      background: #f4f6f8;
       margin: 0;
       padding: 20px;
     }
     .container {
-      max-width: 500px;
+      max-width: 400px;
       margin: auto;
       background: white;
       padding: 30px;
@@ -21,56 +21,56 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
     h2 {
-      color: #222;
-      text-align: center;
+      color: #333;
       margin-bottom: 20px;
+      text-align: center;
     }
     input, button {
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
+      padding: 12px;
+      margin: 10px 0;
       border: 1px solid #ccc;
       border-radius: 6px;
     }
     button {
-      background-color: #007BFF;
+      background: #4CAF50;
       color: white;
       border: none;
       cursor: pointer;
     }
     button:hover {
-      background-color: #0056b3;
+      background: #45a049;
+    }
+    .rewards {
+      margin-top: 20px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Add/Update Customer Rewards</h2>
-    <input type="text" id="name" placeholder="Customer Name" />
-    <input type="text" id="mobile" placeholder="Mobile Number" />
-    <input type="text" id="location" placeholder="Location" />
-    <input type="text" id="bill" placeholder="Bill Number" />
-    <input type="number" id="stamps" placeholder="No. of Stamps" />
-    <button onclick="saveData()">Submit</button>
+    <h2>Check Your Rewards</h2>
+    <input type="text" id="mobile" placeholder="Enter Mobile Number" />
+    <button onclick="checkRewards()">View Rewards</button>
+    <div class="rewards" id="rewardsDisplay"></div>
   </div>
 
   <script>
-    function saveData() {
-      const name = document.getElementById('name').value;
+    function checkRewards() {
       const mobile = document.getElementById('mobile').value;
-      const location = document.getElementById('location').value;
-      const bill = document.getElementById('bill').value;
-      const stamps = document.getElementById('stamps').value;
-
-      if (!name || !mobile || !location || !bill || !stamps) {
-        alert('All fields are required.');
-        return;
-      }
-
       const data = JSON.parse(localStorage.getItem('loyaltyDB') || '{}');
-      data[mobile] = { name, mobile, location, bill, stamps };
-      localStorage.setItem('loyaltyDB', JSON.stringify(data));
-      alert('Customer data saved successfully.');
+      const record = data[mobile];
+
+      if (record) {
+        document.getElementById('rewardsDisplay').innerHTML = `
+          <h3>Hello ${record.name}!</h3>
+          <p>Location: ${record.location}</p>
+          <p>Bill #: ${record.bill}</p>
+          <p>You have <strong>${record.stamps}</strong> stamps.</p>
+        `;
+      } else {
+        document.getElementById('rewardsDisplay').innerHTML = '<p>No rewards found for this number.</p>';
+      }
     }
   </script>
 </body>
